@@ -1,7 +1,12 @@
 # Грузовые аукционы — SPA
 
 Single-page application для грузовых аукционов. Разработано с использованием React + TypeScript + Vite.
+## Запуск
 
+```bash
+npm install
+npm run dev
+```
 ## Стек технологий
 
 - **React 19** + **TypeScript 6**
@@ -13,12 +18,7 @@ Single-page application для грузовых аукционов. Разраб
 - **MSW v2** — мок-сервер для разработки
 - **Feature-Sliced Design** — архитектура
 
-## Запуск
 
-```bash
-npm install
-npm run dev
-```
 
 Приложение будет доступно по адресу http://localhost:5173.
 
