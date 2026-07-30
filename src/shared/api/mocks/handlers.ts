@@ -80,6 +80,20 @@ export const handlers: HttpHandler[] = [
       );
     }
 
+    if (auction.detail.auc_type === 'Up' && body.price <= auction.detail.current_price) {
+      return HttpResponse.json(
+        { detail: [{ field: 'price', message: `Цена должна быть больше текущей (${auction.detail.current_price} ₽)` }] },
+        { status: 422 }
+      );
+    }
+
+    if (auction.detail.auc_type === 'Down' && body.price >= auction.detail.current_price) {
+      return HttpResponse.json(
+        { detail: [{ field: 'price', message: `Цена должна быть меньше текущей (${auction.detail.current_price} ₽)` }] },
+        { status: 422 }
+      );
+    }
+
     if (auction.detail.bet_step != null) {
       const diff = Math.abs(body.price - auction.detail.current_price);
       if (diff > 0 && diff % auction.detail.bet_step !== 0) {

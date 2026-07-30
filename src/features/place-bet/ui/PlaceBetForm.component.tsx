@@ -5,7 +5,7 @@ import { Link, useParams, useRouter } from '@tanstack/react-router';
 import { api } from '@/shared/api/http-client';
 import type { AuctionDetail } from '@/shared/api/types';
 import { Spinner } from '@/shared/ui/Spinner.component';
-import { placeBetSchema, type PlaceBetFormData } from '../lib/schema';
+import { createPlaceBetSchema, type PlaceBetFormData } from '../lib/schema';
 import { usePlaceBet } from '../api/usePlaceBet';
 
 export function PlaceBetPage() {
@@ -20,12 +20,14 @@ export function PlaceBetPage() {
 
   const mutation = usePlaceBet(auctionUuid);
 
+  const betSchema = auction ? createPlaceBetSchema(auction) : null;
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<PlaceBetFormData>({
-    resolver: zodResolver(placeBetSchema),
+    resolver: betSchema ? zodResolver(betSchema) : undefined,
     defaultValues: {
       price: auction?.current_price ?? 0,
       comment: '',
