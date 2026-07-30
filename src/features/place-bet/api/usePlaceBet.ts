@@ -1,11 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/shared/api/http-client';
 import type { AuctionBet, AuctionDetail } from '@/shared/api/types';
-import { useUiStore } from '@/shared/store/ui-store';
 
 export function usePlaceBet(auctionUuid: string) {
   const queryClient = useQueryClient();
-  const addToast = useUiStore((s) => s.addToast);
 
   return useMutation({
     mutationFn: (data: { price: number; comment?: string }) =>
@@ -37,15 +35,11 @@ export function usePlaceBet(auctionUuid: string) {
       if (context?.prevBets) {
         queryClient.setQueryData(['bets', auctionUuid], context.prevBets);
       }
-      const error = _err as { status?: number; body?: { detail?: Array<{ field: string; message: string }> } };
-      const message = error?.body?.detail?.[0]?.message ?? 'Ошибка при размещении ставки';
-      addToast(message, 'error');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['auctions'] });
       queryClient.invalidateQueries({ queryKey: ['auction', auctionUuid] });
       queryClient.invalidateQueries({ queryKey: ['bets', auctionUuid] });
-      addToast('Ставка успешно размещена!', 'success');
     },
   });
 }

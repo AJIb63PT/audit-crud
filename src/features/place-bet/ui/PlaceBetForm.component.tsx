@@ -5,12 +5,14 @@ import { Link, useParams, useRouter } from '@tanstack/react-router';
 import { api } from '@/shared/api/http-client';
 import type { AuctionDetail } from '@/shared/api/types';
 import { Spinner } from '@/shared/ui/Spinner.component';
+import { useUiStore } from '@/shared/store/ui-store';
 import { createPlaceBetSchema, type PlaceBetFormData } from '../lib/schema';
 import { usePlaceBet } from '../api/usePlaceBet';
 
 export function PlaceBetPage() {
   const { auctionUuid } = useParams({ from: '/auctions/$auctionUuid/place-bet' });
   const router = useRouter();
+  const addToast = useUiStore((s) => s.addToast);
 
   const { data: auction, isLoading } = useQuery({
     queryKey: ['auction', auctionUuid],
@@ -34,10 +36,25 @@ export function PlaceBetPage() {
     },
   });
 
+  const onFormError = (formErrors: Record<string, { message?: string }>) => {
+    const firstError = Object.values(formErrors)[0];
+    if (firstError?.message) {
+      addToast(firstError.message, 'error');
+    } else {
+      addToast('Проверьте правильность заполнения формы', 'error');
+    }
+  };
+
   const onSubmit = (data: PlaceBetFormData) => {
     mutation.mutate(data, {
       onSuccess: () => {
+        addToast('Ставка успешно размещена!', 'success');
         router.navigate({ to: '/auctions/$auctionUuid', params: { auctionUuid } });
+      },
+      onError: (err: unknown) => {
+        const error = err as { status?: number; body?: { detail?: Array<{ field: string; message: string }> } };
+        const message = error?.body?.detail?.[0]?.message ?? 'Ошибка при размещении ставки';
+        addToast(message, 'error');
       },
     });
   };
@@ -81,7 +98,7 @@ export function PlaceBetPage() {
           {auction.bet_step != null && <div className="text-xs text-gray-500">Шаг ставки: {auction.bet_step.toLocaleString('ru-RU')} ₽</div>}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} className="flex flex-col gap-4">
           <div>
             <label className="text-xs font-semibold text-gray-700 block mb-1">
               Цена (₽) *
