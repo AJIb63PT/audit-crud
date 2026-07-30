@@ -1,6 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { AuctionType, AuctionStatus } from '@/shared/api/types';
 import { CITIES } from '@/shared/api/mocks/cities';
+import { useDebounce } from '@/shared/lib/useDebounce';
 
 interface FilterValues {
   cargo_num: string;
@@ -29,10 +30,20 @@ export function Filters({ values, onChange }: Props) {
   const [local, setLocal] = useState<FilterValues>(values);
   const [expanded, setExpanded] = useState(false);
 
+  const debouncedCargoNum = useDebounce(local.cargo_num, 400);
+
+  useEffect(() => {
+    if (debouncedCargoNum !== values.cargo_num) {
+      onChange({ ...local, cargo_num: debouncedCargoNum });
+    }
+  }, [debouncedCargoNum]);
+
   const update = useCallback((patch: Partial<FilterValues>) => {
     const next = { ...local, ...patch };
     setLocal(next);
-    onChange(next);
+    if (!('cargo_num' in patch)) {
+      onChange(next);
+    }
   }, [local, onChange]);
 
   const toggleStatus = (s: string) => {
@@ -119,7 +130,11 @@ export function Filters({ values, onChange }: Props) {
           </div>
 
           <div className="flex gap-2">
-            <button onClick={() => update({ cargo_num: '', status: '', statuses: [], auc_type: '', load_city: '', unload_city: '', date_from: '', date_to: '', is_available: false, is_bidder: false, price_from: '', price_to: '' })} className="px-4 py-2 rounded-lg border border-gray-300 bg-white cursor-pointer text-xs">
+            <button onClick={() => {
+              const reset = { cargo_num: '', status: '', statuses: [], auc_type: '', load_city: '', unload_city: '', date_from: '', date_to: '', is_available: false, is_bidder: false, price_from: '', price_to: '' };
+              setLocal(reset);
+              onChange(reset);
+            }} className="px-4 py-2 rounded-lg border border-gray-300 bg-white cursor-pointer text-xs">
               Сбросить
             </button>
           </div>

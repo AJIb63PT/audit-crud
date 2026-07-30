@@ -3,7 +3,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { createRouter } from './router';
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 30_000,

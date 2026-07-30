@@ -1,7 +1,5 @@
 import { http, HttpResponse, type HttpHandler } from 'msw';
-import { generateAuctions, getAuction, getBets, addBet, filterAuctions } from './db';
-
-generateAuctions();
+import { getAuction, getBets, addBet, filterAuctions } from './db';
 
 export const handlers: HttpHandler[] = [
   http.post('*/auctions/list', async ({ request }) => {
@@ -80,6 +78,16 @@ export const handlers: HttpHandler[] = [
         { detail: [{ field: 'price', message: `Цена не может быть больше ${auction.detail.max_price}` }] },
         { status: 422 }
       );
+    }
+
+    if (auction.detail.bet_step != null) {
+      const diff = Math.abs(body.price - auction.detail.current_price);
+      if (diff > 0 && diff % auction.detail.bet_step !== 0) {
+        return HttpResponse.json(
+          { detail: [{ field: 'price', message: `Цена должна быть кратна шагу ${auction.detail.bet_step} ₽` }] },
+          { status: 422 }
+        );
+      }
     }
 
     const bet = addBet(auctionUuid as string, body.price, body.comment ?? null);

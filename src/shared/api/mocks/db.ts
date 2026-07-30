@@ -54,6 +54,14 @@ const auctionConfigs: Array<{
 
 const generatedAuctions = new Map<string, StoreAuction>();
 const generatedBets = new Map<string, AuctionBet[]>();
+let initialized = false;
+
+function ensureInitialized(): void {
+  if (!initialized) {
+    generateAuctions();
+    initialized = true;
+  }
+}
 
 export function generateAuctions(): void {
   generatedAuctions.clear();
@@ -171,18 +179,22 @@ function generateInitialBets(): void {
 }
 
 export function getAllAuctions(): StoreAuction[] {
+  ensureInitialized();
   return Array.from(generatedAuctions.values());
 }
 
 export function getAuction(uuid: string): StoreAuction | undefined {
+  ensureInitialized();
   return generatedAuctions.get(uuid);
 }
 
 export function getBets(auctionUuid: string): AuctionBet[] {
+  ensureInitialized();
   return generatedBets.get(auctionUuid) ?? [];
 }
 
 export function addBet(auctionUuid: string, price: number, comment?: string | null): AuctionBet {
+  ensureInitialized();
   const store = generatedAuctions.get(auctionUuid);
   if (!store) throw new Error('Auction not found');
 
@@ -240,6 +252,7 @@ export function filterAuctions(params: {
   page?: number;
   per_page?: number;
 }): { data: AuctionListItem[]; total: number; page: number; per_page: number; total_pages: number } {
+  ensureInitialized();
   let items = Array.from(generatedAuctions.values()).map((s) => s.item);
 
   if (params.cargo_num) {
